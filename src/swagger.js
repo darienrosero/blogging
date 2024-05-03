@@ -1,11 +1,12 @@
 import swaggerAutogen from 'swagger-autogen'
+import { PORT } from './config/config.js'
 
 const doc = {
   info: {
     title: 'My API',
     description: 'Description'
   },
-  host: 'localhost:4000'
+  host: `localhost:${PORT}`
 }
 
 const outputFile = './swagger-output.json'
