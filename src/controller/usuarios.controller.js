@@ -149,32 +149,79 @@ export const buscarPublicaciones = async (req, res) => {
   }
 }
 
-// esta funcion crea comentarios
+// esta funcion crear comentarios
 export const comentar = async (req, res) => {
-  const tituloPublicacion = req.params.nombre
+  const usuarioPublicacion = req.params.nombre
+  const tituloPublicacion = req.params.categorias
   const [publicacion] = await pool.execute('SELECT titulo_publicacion FROM publicaciones WHERE titulo_publicacion = ?', [tituloPublicacion])
   const [idPublicacion] = await pool.execute('SELECT id_publicaciones FROM publicaciones WHERE titulo_publicacion = ?', [tituloPublicacion])
-  const [idUsuario] = await pool.execute('SELECT usuario_que_publico FROM publicaciones WHERE titulo_publicacion = ?', [tituloPublicacion])
+  const [nombreId] = await pool.execute('SELECT id FROM usuarios WHERE nombre = ?', [usuarioPublicacion])
   const { comentario } = req.body
   const contenidoPublicacion = publicacion[0].titulo_publicacion
   const contenidoIdPublicacion = idPublicacion[0].id_publicaciones
-  const contenidoIdUsuario = idUsuario[0].usuario_que_publico
+  const contenidoUsuario = nombreId[0].id
 
   try {
     if (contenidoPublicacion === tituloPublicacion) {
-      await pool.execute('INSERT INTO comentarios VALUES (null, ?, ?, ?)', [comentario, contenidoIdPublicacion, contenidoIdUsuario])
+      await pool.execute('INSERT INTO comentarios VALUES (null, ?, ?, ?)', [comentario, contenidoIdPublicacion, contenidoUsuario])
       res.status(200).json({ message: 'comentario publicado' })
+    } else {
+      res.status(403).json({ message: 'la publicaion que quieres comentar no existe' })
     }
   } catch (error) {
     res.status(404).json({ message: 'hubo un problema interno', details: error.message })
   }
 }
 
-/* // esta funcion permite actulizar los comentario
+// esta funcion permite actulizar los comentario
 export const editarComentario = async (req, res) => {
   const nombre = req.params.nombre
+  const publicaion = req.params.categorias
+  const [idPublicacion] = await pool.execute('SELECT id_publicaciones FROM publicaciones WHERE titulo_publicacion = ?', [publicaion])
+  const contenidoIdPublicacion = idPublicacion[0].id_publicaciones
+  const [idComentario] = await pool.execute('SELECT publicacion_id FROM comentarios WHERE publicacion_id = ?', [contenidoIdPublicacion])
+  const contenidoIdComentario = idComentario[0].publicacion_id
+
   const [idUsuario] = await pool.execute('SELECT id FROM usuarios WHERE nombre = ?', [nombre])
   const contenidoIdUsuario = idUsuario[0].id
   const [usuarioComentario] = await pool.execute('SELECT usuario_id FROM comentarios WHERE usuario_id = ?', [contenidoIdUsuario])
-  console.log(nombre, contenidoIdUsuario, usuarioComentario)
-} */
+  const contenidoUsuario = usuarioComentario[0].usuario_id
+
+  try {
+    if (contenidoIdPublicacion === contenidoIdComentario && contenidoIdUsuario === contenidoUsuario) {
+      const { comentario } = req.body
+      await pool.execute('UPDATE comentarios SET comentario = ?, publicacion_id = ?, usuario_id = ?', [comentario, contenidoIdPublicacion, contenidoIdUsuario])
+      res.status(200).json({ message: 'comentario editado' })
+    } else {
+      res.status(403).json({ message: 'este comentario no es tuyo' })
+    }
+  } catch (error) {
+    res.status(404).json({ message: 'hubo un problema interno', details: error.message })
+  }
+}
+
+// esta funcion permite eliminar comentarios
+export const eliminarComentario = async (req, res) => {
+  const nombre = req.params.nombre
+  const publicaion = req.params.categorias
+  const [idPublicacion] = await pool.execute('SELECT id_publicaciones FROM publicaciones WHERE titulo_publicacion = ?', [publicaion])
+  const contenidoIdPublicacion = idPublicacion[0].id_publicaciones
+  const [idComentario] = await pool.execute('SELECT publicacion_id FROM comentarios WHERE publicacion_id = ?', [contenidoIdPublicacion])
+  const contenidoIdComentario = idComentario[0].publicacion_id
+
+  const [idUsuario] = await pool.execute('SELECT id FROM usuarios WHERE nombre = ?', [nombre])
+  const contenidoIdUsuario = idUsuario[0].id
+  const [usuarioComentario] = await pool.execute('SELECT usuario_id FROM comentarios WHERE usuario_id = ?', [contenidoIdUsuario])
+  const contenidoUsuario = usuarioComentario[0].usuario_id
+
+  try {
+    if (contenidoIdPublicacion === contenidoIdComentario && contenidoIdUsuario === contenidoUsuario) {
+      const { comentario } = req.body
+      await pool.execute('DELETE FROM comentarios where comentario = ?', [comentario])
+      res.status(200).json({ message: 'comentario eliminado' })
+    }
+    res.status(403).json({ message: 'este comentario no es tuyo' })
+  } catch (error) {
+    res.status(404).json({ message: 'hubo un problema interno', details: error.message })
+  }
+}

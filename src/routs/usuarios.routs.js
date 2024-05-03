@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { actualizacion, actualizarPublicacion, buscarPublicaciones, comentar, editarComentario, eliminarCuenta, eliminarPublicacion, nuevaPublicacion, publicaiones, registro } from '../controller/usuarios.controller.js'
+import { actualizacion, actualizarPublicacion, buscarPublicaciones, comentar, editarComentario, eliminarComentario, eliminarCuenta, eliminarPublicacion, nuevaPublicacion, publicaiones, registro } from '../controller/usuarios.controller.js'
 
 const router = Router()
 
@@ -27,10 +27,13 @@ router.get('/publicaciones/:nombre', publicaiones)
 // esta ruta busca las publicaiones por su titulo
 router.get('/publicacion/titulo/:nombre', buscarPublicaciones)
 
-// esta ruta permite comentar las publicaciones (dentro de la dimamica de la url se busca pasar el titulo de la publicacion)
-router.post('/comentar/:nombre', comentar)
+// esta ruta permite comentar las publicaciones (dentro de la dimamica de nombre se busca pasar el nombre de quien esta comentando y en la dinamica de categorias se busca pasar el titulo de la publicacion que se quiere comentar)
+router.post('/comentar/:nombre/:categorias', comentar)
 
-// esta ruta permite editar los comentarios propios
-router.put('/comentar/editar/:nombre', editarComentario)
+// esta ruta permite editar los comentarios propios (dentro de la dinamica de categorias se busca pasar el nombre de la publicacion que quiere editar)
+router.put('/comentar/editar/:nombre/:categorias', editarComentario)
+
+// esta ruta permite eliminar un comentario (dentro de la dinamica de categorias se busca pasar el nombre de la publicacion que quiere eliminar y el la dinamica de nombre se busca pasar el nombre del usuario que esta eliminando el comentario)
+router.delete('/comentar/eliminar/:nombre/:categorias', eliminarComentario)
 
 export default router
